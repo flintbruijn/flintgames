@@ -849,6 +849,109 @@ main {
 }
 
 /* ==================================================
+   MOBIELE SCHERMFORMAAT-WAARSCHUWING
+================================================== */
+
+#mobieleOriëntatieWaarschuwing {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  padding: 24px;
+  background: rgba(0, 0, 0, .94);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mobiele-orientatie-menu {
+  width: min(420px, 100%);
+  padding: 30px 24px;
+  border: 1px solid #38383f;
+  border-radius: 22px;
+  background: #1b1b1f;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, .75);
+}
+
+.mobiele-orientatie-icoon {
+  width: 54px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border: 4px solid #fff;
+  border-radius: 10px;
+  transform: rotate(0deg);
+  position: relative;
+  transition: transform .25s ease;
+}
+
+.mobiele-orientatie-icoon::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  left: 50%;
+  bottom: 5px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.mobiele-orientatie-menu h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.mobiele-orientatie-menu p {
+  margin: 0;
+  color: #a0a0a9;
+  line-height: 1.5;
+}
+
+.mobiele-orientatie-knop {
+  width: 100%;
+  margin-top: 24px;
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: #ff4d6d;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.mobiele-orientatie-knop:hover {
+  background: #ff385c;
+}
+
+.mobiele-orientatie-hint {
+  margin-top: 12px !important;
+  font-size: 12px;
+  color: #777780 !important;
+}
+
+/* Alleen telefoons in portret */
+@media (orientation: portrait) and (max-width: 767px) and (pointer: coarse) {
+  #mobieleOriëntatieWaarschuwing {
+    display: flex;
+  }
+
+  #mobieleOriëntatieWaarschuwing .mobiele-orientatie-icoon {
+    animation: draaiTelefoon 1.8s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes draaiTelefoon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+/* ==================================================
    RESPONSIVE
 ================================================== */
 
@@ -995,7 +1098,38 @@ main {
 </style>
 </head>
 
+
 <body>
+
+<!-- ==================================================
+     MOBIELE SCHERMFORMAAT-WAARSCHUWING
+================================================== -->
+
+<div id="mobieleOriëntatieWaarschuwing" aria-live="polite">
+  <div class="mobiele-orientatie-menu">
+
+    <div class="mobiele-orientatie-icoon" aria-hidden="true"></div>
+
+    <h2>Deze website is niet geschikt voor dit schermformaat</h2>
+
+    <p>Draai je telefoon.</p>
+
+    <button
+      id="draaiTelefoonKnop"
+      class="mobiele-orientatie-knop"
+      type="button"
+    >
+      Draai scherm
+    </button>
+
+    <p class="mobiele-orientatie-hint">
+      Werkt de knop niet? Draai je telefoon dan handmatig.
+    </p>
+
+  </div>
+</div>
+
+
 
 <!-- ==================================================
      MENU PAGINA
@@ -1363,6 +1497,137 @@ main {
 </div>
 
 <script>
+
+/* ==================================================
+   MOBIELE SCHERMFORMAAT-WAARSCHUWING
+================================================== */
+
+const mobieleOrientatieWaarschuwing =
+  document.getElementById(
+    "mobieleOriëntatieWaarschuwing"
+  );
+
+const draaiTelefoonKnop =
+  document.getElementById(
+    "draaiTelefoonKnop"
+  );
+
+function isTelefoon() {
+  return (
+    window.matchMedia(
+      "(max-width: 767px) and (pointer: coarse)"
+    ).matches
+  );
+}
+
+async function draaiTelefoon() {
+
+  if (!isTelefoon()) {
+    return;
+  }
+
+  try {
+
+    if (
+      document.documentElement.requestFullscreen &&
+      !document.fullscreenElement
+    ) {
+      await document.documentElement.requestFullscreen();
+    }
+
+  } catch (error) {
+    /* Fullscreen is niet in iedere browser toegestaan. */
+  }
+
+  try {
+
+    if (
+      screen.orientation &&
+      screen.orientation.lock
+    ) {
+
+      await screen.orientation.lock(
+        "landscape"
+      );
+
+    }
+
+  } catch (error) {
+    /*
+      Sommige telefoons blokkeren orientation.lock.
+      De gebruiker kan het scherm dan handmatig draaien.
+    */
+  }
+
+  controleerMobieleOrientatie();
+
+}
+
+function controleerMobieleOrientatie() {
+
+  if (!mobieleOrientatieWaarschuwing) {
+    return;
+  }
+
+  const telefoon =
+    isTelefoon();
+
+  const portret =
+    window.matchMedia(
+      "(orientation: portrait)"
+    ).matches;
+
+  if (
+    telefoon &&
+    portret
+  ) {
+
+    mobieleOrientatieWaarschuwing.style.display =
+      "flex";
+
+  } else {
+
+    mobieleOrientatieWaarschuwing.style.display =
+      "none";
+
+  }
+
+}
+
+if (draaiTelefoonKnop) {
+
+  draaiTelefoonKnop.addEventListener(
+    "click",
+    draaiTelefoon
+  );
+
+}
+
+window.addEventListener(
+  "resize",
+  controleerMobieleOrientatie
+);
+
+window.addEventListener(
+  "orientationchange",
+  controleerMobieleOrientatie
+);
+
+if (screen.orientation) {
+
+  screen.orientation.addEventListener(
+    "change",
+    controleerMobieleOrientatie
+  );
+
+}
+
+document.addEventListener(
+  "fullscreenchange",
+  controleerMobieleOrientatie
+);
+
+controleerMobieleOrientatie();
 
 /* ==================================================
    GAMES
