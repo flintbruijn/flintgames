@@ -476,7 +476,7 @@ main {
 
 #gamePagina {
   display: none;
-  min-height: calc(100vh - 81px);
+  min-height: 100vh;
   background: #101012;
 }
 
@@ -484,7 +484,7 @@ main {
   width: 100%;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 18px;
+  padding: 12px;
 }
 
 .game-layout {
@@ -549,7 +549,7 @@ main {
   position: relative;
   width: 100%;
   min-height: 520px;
-  height: calc(100vh - 155px);
+  height: calc(100dvh - 115px);
   max-height: 850px;
   overflow: hidden;
   border: 1px solid #2b2b30;
@@ -948,6 +948,68 @@ main {
   }
   to {
     transform: rotate(90deg);
+  }
+}
+
+/* ==================================================
+   TELEFOON - LANDSCAPE GAME MODE
+================================================== */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+
+  #gamePagina {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+
+  .game-wrapper {
+    height: 100dvh;
+    max-width: none;
+    padding: 6px;
+  }
+
+  .game-layout {
+    display: block;
+  }
+
+  .game-main {
+    width: 100%;
+    height: 100%;
+  }
+
+  .game-topbar {
+    height: 42px;
+    margin-bottom: 6px;
+  }
+
+  .game-frame-container {
+    width: 100%;
+    height: calc(100dvh - 60px);
+    min-height: 0;
+    max-height: none;
+    border-radius: 10px;
+  }
+
+  .game-onderkant {
+    display: none;
+  }
+
+  .andere-games {
+    display: none !important;
+  }
+}
+
+/* ==================================================
+   TELEFOON - GEEN ZIJGAMES IN SPEELSCHERM
+================================================== */
+@media (pointer: coarse) and (orientation: portrait) and (max-width: 767px),
+       (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+
+  .game-layout {
+    display: block;
+  }
+
+  .andere-games {
+    display: none !important;
   }
 }
 
@@ -1423,7 +1485,7 @@ main {
     <div class="credits-content">
 
       <div class="credit-sectie">
-
+<! version.change -->
         <h3>
           Version
         </h3>
@@ -1441,7 +1503,7 @@ main {
         </h3>
 
         <p>
-          Telefoon draaien
+          tilt
         </p>
 
       </div>
@@ -2417,7 +2479,7 @@ function naarMenu() {
    FULLSCREEN
 ================================================== */
 
-function maakFullscreen() {
+async function maakFullscreen() {
 
   if (
     document.fullscreenElement
@@ -2427,8 +2489,9 @@ function maakFullscreen() {
       document.exitFullscreen
     ) {
 
-      document.exitFullscreen();
-
+      try {
+        await document.exitFullscreen();
+      } catch (error) {}
     }
 
     return;
@@ -2438,8 +2501,21 @@ function maakFullscreen() {
     gameFrameContainer.requestFullscreen
   ) {
 
-    gameFrameContainer.requestFullscreen();
+    try {
+      await gameFrameContainer.requestFullscreen();
+    } catch (error) {}
+  }
 
+  try {
+    if (
+      isTelefoon() &&
+      screen.orientation &&
+      screen.orientation.lock
+    ) {
+      await screen.orientation.lock("landscape");
+    }
+  } catch (error) {
+    /* De browser kan orientation lock blokkeren. */
   }
 }
 
