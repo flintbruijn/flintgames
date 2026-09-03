@@ -1014,6 +1014,14 @@ main {
 }
 
 /* ==================================================
+   SNEL TERUG NAAR HOME
+================================================== */
+.terug-knop {
+  position: relative;
+  z-index: 50;
+}
+
+/* ==================================================
    RESPONSIVE
 ================================================== */
 
@@ -1290,8 +1298,10 @@ main {
             class="terug-knop"
             type="button"
             onclick="naarMenu()"
+            aria-label="Terug naar home"
+            title="Terug naar home"
           >
-            ← Menu
+            ← Home
           </button>
 
           <div
@@ -1485,13 +1495,13 @@ main {
     <div class="credits-content">
 
       <div class="credit-sectie">
-<! version.change -->
+
         <h3>
           Version
         </h3>
 
         <p>
-          1.3
+          1.3a
         </p>
 
       </div>
