@@ -1788,7 +1788,7 @@ controleerMobieleOrientatie();
    NIETS AAN DEZE LIJST AANGEPAST
 ================================================== */
 
-const BEVEILIGD_WACHTWOORD = "wachtwoord";
+const BEVEILIGD_WACHTWOORD = "CHANGE_ME";
 
 const links = [
 
@@ -1800,12 +1800,12 @@ const links = [
   },
 
   {
-    naam: "FlintGames Admin",
-    url: "https://share.google/r2IKMf0FxMYYP90Zd",
+    naam: "Admin",
+    url: "https://trickortrust.github.io/reneleblancschreeuw/",
     wachtwoordBeveiligd: true,
     onderaan: true,
     afbeelding:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv47iNe2n0kHziP720SyyN5D1J6S5_j12ePDDrpu3TUQ&s=10"
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRddOhnLRbUMpa93ogN8l0opSZTjW3ld3NBMY9Xd9gO8g&s=10"
   },
 
   {
@@ -2501,6 +2501,23 @@ function toonAndereGames() {
 ================================================== */
 
 function openGame(game) {
+
+  /*
+    Wachtwoordbeveiligde games mogen pas openen
+    nadat het juiste wachtwoord is ingevoerd.
+  */
+  if (game.wachtwoordBeveiligd === true) {
+    wachtwoordGame = game;
+    wachtwoordFout.style.display = "none";
+    wachtwoordInput.value = "";
+    wachtwoordOverlay.style.display = "flex";
+
+    setTimeout(function() {
+      wachtwoordInput.focus();
+    }, 50);
+
+    return;
+  }
 
   /*
     Alleen . wordt
