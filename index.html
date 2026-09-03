@@ -849,6 +849,72 @@ main {
 }
 
 /* ==================================================
+   WACHTWOORD OVERLAY
+================================================== */
+#wachtwoordOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  padding: 20px;
+  background: rgba(0,0,0,.82);
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.wachtwoord-menu {
+  width: min(460px, 100%);
+  padding: 28px;
+  border: 1px solid #38383f;
+  border-radius: 20px;
+  background: #1b1b1f;
+  box-shadow: 0 25px 80px rgba(0,0,0,.7);
+}
+
+.wachtwoord-menu h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.wachtwoord-menu p {
+  margin: 0;
+  color: #a0a0a9;
+  line-height: 1.5;
+}
+
+#wachtwoordInput {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid #3a3a42;
+  border-radius: 11px;
+  outline: none;
+  background: #25252b;
+  color: #fff;
+  font-size: 15px;
+}
+
+#wachtwoordInput:focus {
+  border-color: #ff4d6d;
+  box-shadow: 0 0 0 2px rgba(255,77,109,.15);
+}
+
+#wachtwoordFout {
+  display: none;
+  margin-top: 9px;
+  color: #ff7f95;
+  font-size: 13px;
+}
+
+.wachtwoord-knoppen {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ==================================================
    MOBIELE SCHERMFORMAAT-WAARSCHUWING
 ================================================== */
 
@@ -1180,9 +1246,21 @@ main {
 
     <div class="mobiele-orientatie-icoon" aria-hidden="true"></div>
 
-    <h2>FlintGames is niet geschikt voor dit schermformaat</h2>
+    <h2>Deze website is niet geschikt voor dit schermformaat</h2>
 
     <p>Draai je telefoon.</p>
+
+    <button
+      id="draaiTelefoonKnop"
+      class="mobiele-orientatie-knop"
+      type="button"
+    >
+      Draai scherm
+    </button>
+
+    <p class="mobiele-orientatie-hint">
+      Werkt de knop niet? Draai je telefoon dan handmatig.
+    </p>
 
   </div>
 </div>
@@ -1456,6 +1534,22 @@ main {
 </div>
 
 <!-- ==================================================
+     WACHTWOORD OVERLAY
+================================================== -->
+<div id="wachtwoordOverlay">
+  <div class="wachtwoord-menu">
+    <h2>Wachtwoord vereist</h2>
+    <p>Vul het wachtwoord in om deze game in FlintGames te openen.</p>
+    <input id="wachtwoordInput" type="password" placeholder="Wachtwoord" autocomplete="off">
+    <div id="wachtwoordFout">Onjuist wachtwoord.</div>
+    <div class="wachtwoord-knoppen">
+      <button type="button" class="waarschuwing-annuleren" onclick="sluitWachtwoordOverlay()">Annuleren</button>
+      <button type="button" class="waarschuwing-doorgaan" onclick="controleerWachtwoord()">Open game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================================
      CREDITS OVERLAY
 ================================================== -->
 
@@ -1489,7 +1583,7 @@ main {
         </h3>
 
         <p>
-          1.3a
+          1.2
         </p>
 
       </div>
@@ -1501,7 +1595,7 @@ main {
         </h3>
 
         <p>
-          tilt
+          Logo Tijdlek, favicon
         </p>
 
       </div>
@@ -1694,6 +1788,8 @@ controleerMobieleOrientatie();
    NIETS AAN DEZE LIJST AANGEPAST
 ================================================== */
 
+const BEVEILIGD_WACHTWOORD = "wachtwoord";
+
 const links = [
 
   {
@@ -1701,6 +1797,15 @@ const links = [
     url: "https://trickortrust.github.io/reneleblancschreeuw/",
     afbeelding:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHRk5ZHSRXjdzUgEjGcI7J_keE4eD6h7vSeFzKEVrRyw&s=10"
+  },
+
+  {
+    naam: "FlintGames Admin",
+    url: "https://share.google/r2IKMf0FxMYYP90Zd",
+    wachtwoordBeveiligd: true,
+    onderaan: true,
+    afbeelding:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv47iNe2n0kHziP720SyyN5D1J6S5_j12ePDDrpu3TUQ&s=10"
   },
 
   {
@@ -2076,7 +2181,15 @@ const afbeeldingCredits =
 const externWaarschuwing =
   document.getElementById("externWaarschuwing");
 
+const wachtwoordOverlay =
+  document.getElementById("wachtwoordOverlay");
+const wachtwoordInput =
+  document.getElementById("wachtwoordInput");
+const wachtwoordFout =
+  document.getElementById("wachtwoordFout");
+
 let huidigeGame = null;
+let wachtwoordGame = null;
 
 /* ==================================================
    FALLBACK
@@ -2180,6 +2293,20 @@ function veiligeAfbeelding(
 ================================================== */
 
 function toonGames(lijst) {
+
+  /* Games met onderaan: true komen altijd als laatste. */
+  const normaleGames = lijst.filter(function(link) {
+    return link.onderaan !== true;
+  });
+
+  const ondersteGames = lijst.filter(function(link) {
+    return link.onderaan === true;
+  });
+
+  lijst = [
+    ...normaleGames,
+    ...ondersteGames
+  ];
 
   container.innerHTML = "";
 
@@ -2433,6 +2560,54 @@ function openGame(game) {
     40
   );
 }
+
+function sluitWachtwoordOverlay() {
+  wachtwoordOverlay.style.display = "none";
+  wachtwoordGame = null;
+  wachtwoordInput.value = "";
+  wachtwoordFout.style.display = "none";
+}
+
+function controleerWachtwoord() {
+  if (!wachtwoordGame) return;
+
+  if (wachtwoordInput.value === BEVEILIGD_WACHTWOORD) {
+    const game = wachtwoordGame;
+    sluitWachtwoordOverlay();
+    openGameDirect(game);
+  } else {
+    wachtwoordFout.style.display = "block";
+    wachtwoordInput.select();
+  }
+}
+
+function openGameDirect(game) {
+  huidigeGame = game;
+  menuPagina.style.display = "none";
+  gamePagina.style.display = "block";
+  document.body.style.overflow = "hidden";
+  gameTitel.textContent = game.naam;
+  gameUrlStatus.textContent = game.url;
+  gameError.style.display = "none";
+  gameLoading.classList.remove("hidden");
+  gameFrame.src = "about:blank";
+  toonAndereGames();
+  setTimeout(function() {
+    gameFrame.src = game.url;
+  }, 40);
+}
+
+wachtwoordInput.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    controleerWachtwoord();
+  }
+});
+
+wachtwoordOverlay.addEventListener("click", function(event) {
+  if (event.target === wachtwoordOverlay) {
+    sluitWachtwoordOverlay();
+  }
+});
 
 /* ==================================================
    GAME GELADEN
